@@ -11,6 +11,9 @@ Allow the user to filter the data using Query string
 
 getAllTours gives all the data . and we will implement filtering here based on the query string.In the postman we can turn the query string on and off.
 
+IN POSTMAN
+127.0.0.1:3000/api/v1/tours?duration=5&difficulty=easy
+
 ```
 exports.getAllTours = async (req, res) => {
   try {
@@ -36,7 +39,11 @@ const tours = await Tour.find({ duration: 5, difficulty: "easy" });
 Now we can only two results with duration of 5 and difficulty of easy.
 
 2.
+
+```
 const Tour = await Tour.find().where('duration').equals(5).where('difficulty').equals('easy');
+
+```
 
 ---
 
@@ -108,3 +115,53 @@ exports.getAllTours = async (req, res) => {
 ```
 
 ## Making the API Better : Advanced Filtering
+
+We will implement
+1.greaterThan
+2.greaterThanOrEqual
+3.lessThan
+4.lessThanOrEqual
+
+This will be the Query object if we write manually.
+{ difficulty: 'easy' , duration : {\$gte:5}}
+
+IN POSTMAN
+127.0.0.1:3000/api/v1/tours?duration[gte]=5&difficulty=easy
+
+Query object in our app --
+1 .{ duration: { gte: '5' }, difficulty: 'easy' }
+
+2 .{ duration : {\$gte:5},difficulty: 'easy' } //Required query object
+The only difference is the \$ sign .
+
+```
+exports.getAllTours = async (req, res) => {
+  try {
+    // FILTERING
+    const queryObj = { ...req.query };
+    let excludedFields = ["sort", "page", "limit", "limit"];
+    excludedFields.forEach((el) => delete queryObj[el]);
+
+    // ADVANCED FILTERING
+    let queryStr = JSON.stringify(queryObj); //{"duration":{"gte":"5"},"difficulty":"easy"}
+    queryStr = queryStr.replace(/\b(gte|lte|gt|lt)\b/g, (match) => {
+      return `$${match}`;
+    });
+    const query = Tour.find(JSON.parse(queryStr));
+    //EXECUTE QUERY
+    const tours = await query;
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        tours,
+      },
+    });
+  } catch (err) {
+    res.status(404).json({
+      status: "failure",
+      message: err,
+    });
+  }
+};
+```
