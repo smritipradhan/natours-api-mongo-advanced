@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-const app = require("./app");
 dotenv.config({ path: "./config.env" });
+const app = require("./app");
 
 let DB = process.env.DATABASE;
 DB = DB.replace("<PASSWORD>", process.env.PASSWORD);
@@ -17,7 +17,7 @@ mongoose
     console.log("Hey");
   });
 
-const port = process.env.PORT || 2000;
+const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`App running on port ${port}...`);
 });
